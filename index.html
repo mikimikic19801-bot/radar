@@ -275,15 +275,15 @@
     </div>
 
     <script>
-        // ================= ROTACIJA TVOJA DVA API KLJUČA =================
+        // ================= ROTACIJA TVOJA DVA API-FOOTBALL KLJUČA =================
         const API_FOOTBALL_KEYS = [
-            '8464fe0b2c02cc648155fd7aaa8a5806', // Tvoj prvi ključ
-            'f1cce1e4be71307c45a7a206e4a16495'  // Tvoj drugi ključ
+            '8464fe0b2c02cc648155fd7aaa8a5806', // Tvoj prvi ispravan ključ
+            'f1cce1e4be71307c45a7a206e4a16495'  // Tvoj drugi ispravan ključ
         ];
         
         let currentKeyIndex = parseInt(localStorage.getItem('active_key_index')) || 0;
         const ODDS_API_KEY = '0fe3d301aa11cda024d49acef8511f22';
-        // =================================================================
+        // =========================================================================
 
         let remainingOddsCredits = parseInt(localStorage.getItem('odds_credits')) || 500;
         document.getElementById('odds-count').innerText = `${remainingOddsCredits} / 500 preostalo`;
@@ -453,6 +453,7 @@
             const datumFormat = `${godina}-${mesec}-${dan}`;
 
             try {
+                // Poziv ka ispravnom API-Football domenu sa tvojim ključem
                 const response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${datumFormat}`, {
                     method: "GET",
                     headers: {
@@ -652,6 +653,7 @@
             fetchLiveMatches();
         });
 
+        // Skeniranje na 3 minuta (180000ms)
         setInterval(fetchLiveMatches, 180000);
         setInterval(cachePreMatchOdds, 14400000);
 
