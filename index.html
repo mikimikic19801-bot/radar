@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sport Radar Pro</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=96&id=u060U6K9U5L0&format=png&color=00e676">
+    <meta name="theme-color" content="#121212">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --accent-color: #00e676;
+            --danger-color: #ff1744;
+            --warning-color: #ffea00;
+            --gray-text: #aaaaaa;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 2px solid var(--card-bg);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 600px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .header-controls {
+                width: auto;
+                justify-content: flex-end;
+            }
+        }
+
+        .api-tracker {
+            background-color: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            border: 1px solid #333;
+            flex-grow: 1;
+        }
+
+        @media (min-width: 600px) {
+            .api-tracker {
+                flex-grow: 0;
+            }
+        }
+
+        .api-status {
+            margin: 2px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .status-ok { color: var(--accent-color); font-weight: bold; }
+        .status-count { color: var(--warning-color); font-weight: bold; }
+
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--gray-text);
+            margin: 15px 0 10px 0;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 8px;
+            font-weight: bold;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .match-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #2e2e2e;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--gray-text);
+            margin-bottom: 8px;
+        }
+
+        .match-teams {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 80%;
+        }
+
+        .team-logo {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .team-name {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .score {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--accent-color);
+        }
+
+        .odds-badge {
+            background-color: #2a2a2a;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-left: 3px solid var(--warning-color);
+        }
+
+        .card-red {
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .alert-box {
+            background-color: rgba(255, 23, 68, 0.15);
+            border: 1px solid var(--danger-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .presec-container {
+            background-color: #172b1a;
+            border: 1px solid var(--accent-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .presec-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .presec-list {
+            font-size: 12px;
+            margin: 0;
+            padding-left: 15px;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>Sport Radar Pro</h1>
+            <div style="font-size: 10px; color: var(--gray-text)">Skeniranje na 3 min | Favoriti i Crveni Kartoni</div>
+        </div>
+        <div class="header-controls">
+            <div class="api-tracker">
+                <div class="api-status">
+                    <span>Skeniranje (Uživo):</span>
+                    <span id="fd-rate" class="status-ok">AKTIVNO</span>
+                </div>
+                <div class="api-status">
+                    <span>The Odds API:</span>
+                    <span id="odds-count" class="status-count">500 / 500 preostalo</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="presec-box" class="presec-container">
+        <div class="presec-title" id="presec-time-title">Presek stanja</div>
+        <ul class="presec-list" id="presec-items"></ul>
+    </div>
+
+    <div id="live-alert" class="alert-box"></div>
+
+    <div class="section-title">Aktivne i predstojeće utakmice</div>
+    <div id="live-matches-grid" class="grid-container">
+        <div style="color: var(--gray-text); text-align: center; padding: 20px; font-size: 13px;">Učitavanje utakmica sa servera...</div>
+    </div>
+
+    <script>
+        // ================= ROTACIJA TVOJA DVA API KLJUČA =================
+        const API_FOOTBALL_KEYS = [
+            '8464fe0b2c02cc648155fd7aaa8a5806', // Tvoj prvi ključ
+            'f1cce1e4be71307c45a7a206e4a16495'  // Tvoj drugi ključ
+        ];
+        
+        let currentKeyIndex = parseInt(localStorage.getItem('active_key_index')) || 0;
+        const ODDS_API_KEY = '0fe3d301aa11cda024d49acef8511f22';
+        // =================================================================
+
+        let remainingOddsCredits = parseInt(localStorage.getItem('odds_credits')) || 500;
+        document.getElementById('odds-count').innerText = `${remainingOddsCredits} / 500 preostalo`;
+
+        let previousMatchesState = {};
+        let preMatchOddsCache = JSON.parse(localStorage.getItem('pre_match_odds_cache')) || {};
+        let lastCacheTime = parseInt(localStorage.getItem('last_cache_time')) || 0;
+
+        function updateOddsCredits(used) {
+            remainingOddsCredits = Math.max(0, remainingOddsCredits - used);
+            localStorage.setItem('odds_credits', remainingOddsCredits);
+            document.getElementById('odds-count').innerText = `${remainingOddsCredits} / 500 preostalo`;
+        }
+
+        function normalizeTeamName(name) {
+            return name.toLowerCase()
+                .replace(/fc|afc|real|united|city|hotspur|club|athletic|sv|fk|nk/g, '')
+                .trim();
+        }
+
+        async function cachePreMatchOdds(force = false) {
+            const sada = Date.now();
+            const cetiriSata = 4 * 60 * 60 * 1000;
+
+            if (!force && lastCacheTime && (sada - lastCacheTime < cetiriSata) && Object.keys(preMatchOddsCache).length > 0) {
+                return;
+            }
+
+            if (remainingOddsCredits < 1) return;
+            try {
+                const response = await fetch(`https://api.the-odds-api.com/v3/odds/?apiKey=${ODDS_API_KEY}&sport=soccer&region=eu&mkt=h2h`);
+                const data = await response.json();
+                
+                updateOddsCredits(1);
+
+                if (data.success && data.data) {
+                    data.data.forEach(match => {
+                        const key = `${normalizeTeamName(match.home_team)}_${normalizeTeamName(match.away_team)}`;
+                        const bookmaker = match.sites[0];
+                        if (bookmaker) {
+                            preMatchOddsCache[key] = {
+                                home: bookmaker.odds.h2h ? bookmaker.odds.h2h[0] : null,
+                                draw: bookmaker.odds.h2h ? bookmaker.odds.h2h[1] : null,
+                                away: bookmaker.odds.h2h ? bookmaker.odds.h2h[2] : null,
+                                timestamp: Date.now()
+                            };
+                        }
+                    });
+                    localStorage.setItem('pre_match_odds_cache', JSON.stringify(preMatchOddsCache));
+                    localStorage.setItem('last_cache_time', sada.toString());
+                }
+            } catch (e) {
+                console.error("Greška pri keširanju kvota", e);
+            }
+        }
+
+        async function proveriKvoteUzivoZaMec(homeTeam, awayTeam) {
+            if (remainingOddsCredits < 1) return null;
+            try {
+                const response = await fetch(`https://api.the-odds-api.com/v3/odds/?apiKey=${ODDS_API_KEY}&sport=soccer&region=eu&mkt=h2h`);
+                const data = await response.json();
+                
+                updateOddsCredits(1); 
+
+                const matchOdds = data.data.find(m => 
+                    normalizeTeamName(m.home_team).includes(normalizeTeamName(homeTeam)) || 
+                    normalizeTeamName(m.away_team).includes(normalizeTeamName(awayTeam))
+                );
+                
+                if (matchOdds) {
+                    const bookmaker = matchOdds.sites[0];
+                    if (bookmaker) {
+                        return {
+                            home: bookmaker.odds.h2h[0],
+                            draw: bookmaker.odds.h2h[1],
+                            away: bookmaker.odds.h2h[2]
+                        };
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return null;
+        }
+
+        function prikaziLiveUzbinu(naslov, poruka) {
+            const alertBox = document.getElementById('live-alert');
+            alertBox.style.display = 'block';
+            alertBox.innerHTML = `<strong>🚨 ${naslov}</strong><br>${poruka}`;
+            playAlertSound();
+            setTimeout(() => { alertBox.style.display = 'none'; }, 25000);
+        }
+
+        function playAlertSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.8);
+            } catch (e) {
+                console.log("Audio kontekst blokiran dok korisnik ne klikne na ekran.");
+            }
+        }
+
+        function proveriPresekStanja(liveMatches) {
+            const sada = new Date();
+            const sati = sada.getHours();
+            const minuti = sada.getMinutes();
+            
+            if ((sati === 12 || sati === 17) && minuti < 5) {
+                const presecBox = document.getElementById('presec-box');
+                const presecTimeTitle = document.getElementById('presec-time-title');
+                const presecItems = document.getElementById('presec-items');
+                
+                presecTimeTitle.innerText = `📊 AUTOMATSKI PRESEK STANJA U ${sati}:00h`;
+                presecItems.innerHTML = '';
+                
+                let nasaoUtakmice = false;
+                
+                liveMatches.forEach(item => {
+                    const teams = item.teams;
+                    const goals = item.goals;
+                    const minut = item.fixture.status.elapsed ?? 0;
+                    
+                    const homeTeam = teams.home.name;
+                    const awayTeam = teams.away.name;
+                    const homeScore = goals.home ?? 0;
+                    const awayScore = goals.away ?? 0;
+                    
+                    const cacheKey = `${normalizeTeamName(homeTeam)}_${normalizeTeamName(awayTeam)}`;
+                    const preMatchData = preMatchOddsCache[cacheKey];
+                    
+                    let favoritInfo = '';
+                    if (preMatchData) {
+                        if (preMatchData.home && preMatchData.home < 1.75) {
+                            favoritInfo = ` (Favorit: ${homeTeam} ⭐)`;
+                        } else if (preMatchData.away && preMatchData.away < 1.75) {
+                            favoritInfo = ` (Favorit: ${awayTeam} ⭐)`;
+                        }
+                    }
+                    
+                    nasaoUtakmice = true;
+                    presecItems.innerHTML += `<li>[${minut}'] <strong>${homeTeam} ${homeScore}:${awayScore} ${awayTeam}</strong>${favoritInfo}</li>`;
+                });
+                
+                if (!nasaoUtakmice) {
+                    presecItems.innerHTML = '<li>Trenutno nema aktivnih utakmica na terenu u ovom preseku.</li>';
+                }
+                
+                presecBox.style.display = 'block';
+            }
+        }
+
+        async function fetchLiveMatches() {
+            const aktivniKljuc = API_FOOTBALL_KEYS[currentKeyIndex];
+            
+            const danas = new Date();
+            const godina = danas.getFullYear();
+            const mesec = String(danas.getMonth() + 1).padStart(2, '0');
+            const dan = String(danas.getDate()).padStart(2, '0');
+            const datumFormat = `${godina}-${mesec}-${dan}`;
+
+            try {
+                const response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${datumFormat}`, {
+                    method: "GET",
+                    headers: {
+                        "x-apisports-key": aktivniKljuc
+                    }
+                });
+
+                const resData = await response.json();
+
+                if (resData.errors && (resData.errors.rateLimit || resData.errors.requests || resData.errors.token)) {
+                    console.warn(`Ključ na indeksu ${currentKeyIndex} je limitiran. Rotiram...`);
+                    currentKeyIndex = (currentKeyIndex + 1) % API_FOOTBALL_KEYS.length;
+                    localStorage.setItem('active_key_index', currentKeyIndex);
+                    fetchLiveMatches();
+                    return;
+                }
+
+                const sviMecevi = resData.response || [];
+                
+                const aktivniStatusi = ["1H", "HT", "2H", "ET", "BT", "P", "INT"];
+                const matches = sviMecevi.filter(item => {
+                    const status = item.fixture.status.short;
+                    return aktivniStatusi.includes(status) || status === "NS";
+                });
+
+                const grid = document.getElementById('live-matches-grid');
+                grid.innerHTML = '';
+
+                proveriPresekStanja(matches);
+
+                if (matches.length === 0) {
+                    grid.innerHTML = '<div style="color: var(--gray-text); text-align: center; padding: 20px; font-size: 13px;">Trenutno nema aktivnih ili zakazanih utakmica za danas.</div>';
+                    return;
+                }
+
+                for (const item of matches) {
+                    const fixture = item.fixture;
+                    const league = item.league;
+                    const teams = item.teams;
+                    const goals = item.goals;
+                    const events = item.events || [];
+
+                    const homeTeam = teams.home.name;
+                    const awayTeam = teams.away.name;
+                    const homeLogo = teams.home.logo;
+                    const awayLogo = teams.away.logo;
+                    const homeScore = goals.home ?? 0;
+                    const awayScore = goals.away ?? 0;
+                    const minut = fixture.status.elapsed ?? 0;
+                    const statusShort = fixture.status.short;
+                    const matchId = fixture.id;
+
+                    let vremePrikaz = '';
+                    if (statusShort === "NS") {
+                        const vremePocetka = new Date(fixture.date).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+                        vremePrikaz = `📅 ${vremePocetka}`;
+                    } else if (statusShort === "HT") {
+                        vremePrikaz = `⏸️ Poluvreme`;
+                    } else {
+                        vremePrikaz = `⏱️ ${minut}'`;
+                    }
+
+                    let homeRedCards = events.filter(e => e.type === "Card" && e.detail === "Red Card" && e.team.id === teams.home.id).length;
+                    let awayRedCards = events.filter(e => e.type === "Card" && e.detail === "Red Card" && e.team.id === teams.away.id).length;
+
+                    const cacheKey = `${normalizeTeamName(homeTeam)}_${normalizeTeamName(awayTeam)}`;
+                    const preMatchData = preMatchOddsCache[cacheKey];
+
+                    let isHomeFavorit = false;
+                    let isAwayFavorit = false;
+                    let pocetnaKvotaFavorita = null;
+
+                    if (preMatchData) {
+                        if (preMatchData.home && preMatchData.home < 1.75) {
+                            isHomeFavorit = true;
+                            pocetnaKvotaFavorita = preMatchData.home;
+                        } else if (preMatchData.away && preMatchData.away < 1.75) {
+                            isAwayFavorit = true;
+                            pocetnaKvotaFavorita = preMatchData.away;
+                        }
+                    }
+
+                    const staroStanje = previousMatchesState[matchId];
+                    let triggerKvote = false;
+                    let razlogTrigera = '';
+                    let naslovTrigera = 'DETEKTOVANA PROMENA';
+
+                    if (staroStanje && statusShort !== "NS") {
+                        if (staroStanje.homeRedCards < homeRedCards || staroStanje.awayRedCards < awayRedCards) {
+                            triggerKvote = true;
+                            naslovTrigera = "CRVENI KARTON!";
+                            razlogTrigera = `Pao je crveni karton na meču ${homeTeam} - ${awayTeam}! Odmah povlačim uživo kvote.`;
+                        }
+
+                        if (staroStanje.homeScore !== homeScore || staroStanje.awayScore !== awayScore) {
+                            if (isHomeFavorit && awayScore > homeScore) {
+                                triggerKvote = true;
+                                naslovTrigera = "FAVORIT GUBI!";
+                                razlogTrigera = `Domaći favorit <strong>${homeTeam}</strong> gubi od ${awayTeam} (${homeScore}:${awayScore})!`;
+                            } else if (isAwayFavorit && homeScore > awayScore) {
+                                triggerKvote = true;
+                                naslovTrigera = "FAVORIT GUBI!";
+                                razlogTrigera = `Gostujući favorit <strong>${awayTeam}</strong> gubi od ${homeTeam} (${homeScore}:${awayScore})!`;
+                            }
+                        }
+
+                        if (minut >= 75 && homeScore === 0 && awayScore === 0 && !staroStanje.trig75) {
+                            if (isHomeFavorit || isAwayFavorit) {
+                                triggerKvote = true;
+                                naslovTrigera = "KASNI PRITISAK (75. MIN)";
+                                razlogTrigera = `Meč ${homeTeam} - ${awayTeam} je i dalje na 0:0 u 75. minutu. Favorit traži gol!`;
+                                item.trig75 = true;
+                            }
+                        }
+                    }
+
+                    previousMatchesState[matchId] = {
+                        homeScore: homeScore,
+                        awayScore: awayScore,
+                        homeRedCards: homeRedCards,
+                        awayRedCards: awayRedCards,
+                        trig75: staroStanje ? staroStanje.trig75 : false
+                    };
+
+                    let prikazKvotaUzivo = '';
+                    if (triggerKvote) {
+                        const uzivoKvote = await proveriKvoteUzivoZaMec(homeTeam, awayTeam);
+                        if (uzivoKvote) {
+                            let tekstSkoka = '';
+                            if (isHomeFavorit) {
+                                const skokProcenat = (((uzivoKvote.home - pocetnaKvotaFavorita) / pocetnaKvotaFavorita) * 100).toFixed(0);
+                                tekstSkoka = `<br>📈 Kvota na ${homeTeam} skočila sa ${pocetnaKvotaFavorita} na ${uzivoKvote.home} (+${skokProcenat}%)`;
+                            } else if (isAwayFavorit) {
+                                const skokProcenat = (((uzivoKvote.away - pocetnaKvotaFavorita) / pocetnaKvotaFavorita) * 100).toFixed(0);
+                                tekstSkoka = `<br>📈 Kvota na ${awayTeam} skočila sa ${pocetnaKvotaFavorita} na ${uzivoKvote.away} (+${skokProcenat}%)`;
+                            }
+
+                            prikaziLiveUzbinu(naslovTrigera, razlogTrigera + tekstSkoka);
+
+                            prikazKvotaUzivo = `
+                                <div class="odds-badge">
+                                    <strong>⚡ TRENUTNE UŽIVO KVOTE:</strong>
+                                    <span>1: <strong>${uzivoKvote.home}</strong> | X: <strong>${uzivoKvote.draw}</strong> | 2: <strong>${uzivoKvote.away}</strong></span>
+                                    <span style="font-size: 11px; color: var(--warning-color);">${tekstSkoka}</span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    grid.innerHTML += `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <span>🏆 ${league.name} (${league.country})</span>
+                                <span style="color: var(--accent-color); font-weight: bold;">${vremePrikaz}</span>
+                            </div>
+                            <div class="match-teams">
+                                <div class="team-row">
+                                    <div class="team-info">
+                                        <img src="${homeLogo}" class="team-logo" onerror="this.src='https://via.placeholder.com/24'">
+                                        <span class="team-name" style="${isHomeFavorit ? 'color: var(--warning-color);' : ''}">${homeTeam} ${isHomeFavorit ? '⭐' : ''}</span>
+                                        ${homeRedCards > 0 ? `<span class="card-red">${homeRedCards} CRVENI</span>` : ''}
+                                    </div>
+                                    <span class="score">${statusShort === "NS" ? '-' : homeScore}</span>
+                                </div>
+                                <div class="team-row">
+                                    <div class="team-info">
+                                        <img src="${awayLogo}" class="team-logo" onerror="this.src='https://via.placeholder.com/24'">
+                                        <span class="team-name" style="${isAwayFavorit ? 'color: var(--warning-color);' : ''}">${awayTeam} ${isAwayFavorit ? '⭐' : ''}</span>
+                                        ${awayRedCards > 0 ? `<span class="card-red">${awayRedCards} CRVENI</span>` : ''}
+                                    </div>
+                                    <span class="score">${statusShort === "NS" ? '-' : awayScore}</span>
+                                </div>
+                            </div>
+                            ${prikazKvotaUzivo}
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Greška pri povlačenju utakmica uživo:", error);
+                document.getElementById('live-matches-grid').innerHTML = 
+                    `<div style="color: var(--danger-color); text-align: center; padding: 20px; font-size: 13px;">
+                        Privremena greška u radu sa API-jem. Sistem pokušava ponovo...
+                     </div>`;
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrovan', reg.scope))
+                    .catch(err => console.log('SW greška', err));
+            });
+        }
+
+        cachePreMatchOdds().then(() => {
+            fetchLiveMatches();
+        });
+
+        setInterval(fetchLiveMatches, 180000);
+        setInterval(cachePreMatchOdds, 14400000);
+
+    </script>
+</body>
+</html>
